@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
-
+import matplotlib.pyplot as plt; plt.rcdefaults()
+import matplotlib.pyplot as plt
 
 def nothing(x):
     pass
@@ -15,7 +16,7 @@ Gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 
 #Gausian Filter
-gausfilter = cv2.GaussianBlur(img, (3,3), 0 )
+gausfilter = cv2.GaussianBlur(img, (3,3), 0)
 
 
 
@@ -84,9 +85,25 @@ while(1):
     if k == 32:
         break
 
+nMuestra = ("0",)
+nArea = [0.0]
 for i in range(0, len(copycontours),1):
     cnt = contours[i]
     area = cv2.contourArea(cnt)
+    nMuestra = nMuestra +(str(i+1) ,)  #objects
+    nArea.append(area)  #Performance
     print("area [" +str(i) +"] : " + str(area))
 
+
 cv2.destroyAllWindows()
+
+print nMuestra
+print nArea
+nArea.sort()
+print nArea
+y_pos = np.arange(len(nMuestra))
+plt.bar(y_pos, nArea, align="center", alpha= 0.5)
+plt.xticks(y_pos, nMuestra)
+plt.ylabel("Area")
+plt.title("Morphology")
+plt.show()
