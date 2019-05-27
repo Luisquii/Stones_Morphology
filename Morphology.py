@@ -2,15 +2,40 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt; plt.rcdefaults()
 import matplotlib.pyplot as plt
-
+import time
 def nothing(x):
     pass
+
+def mouse_erasing(event, x, y, flags, params):
+    if event == cv2.EVENT_LBUTTONDOWN:
+        print("Color: Black")
+        print(x, y)
+        # px = erode[y, x]
+        # print(px)
+        erode[y - 1, x] = 0 ; erode[y, x] = 0 ; erode[y + 1, x] = 0
+        erode[y, x - 1] = 0; erode[y, x + 1] = 0
+        erode[y + 1, x - 1] = 0; erode[y + 1, x + 1] = 0
+        erode[y - 1, x - 1] = 0; erode[y - 1, x + 1] = 0
+        erode[y - 2, x - 1] = 0; erode[y + 2, x - 1] = 0
+        erode[y - 2, x] = 0; erode[y + 2, x] = 0
+        erode[y - 2, x + 1] = 0; erode[y + 2, x + 1] = 0
+    elif event == cv2.EVENT_RBUTTONDOWN:
+        print("Color: White")
+        # px = erode[y, x]
+        # print(px)
+        erode[y - 1, x] = 255; erode[y, x] = 255; erode[y + 1, x] = 255
+        erode[y, x - 1] = 255; erode[y, x + 1] = 255
+        erode[y + 1, x - 1] = 255; erode[y + 1, x + 1] = 255
+        erode[y - 1, x - 1] = 255; erode[y - 1, x + 1] = 255
+        erode[y - 2, x - 1] = 255; erode[y + 2, x - 1] = 255
+        erode[y - 2, x] = 255; erode[y + 2, x] = 255
+        erode[y - 2, x + 1] = 255; erode[y + 2, x + 1] = 255
 
 kernel1 = np.ones((3,3), np.uint8)
 kernel2 = np.ones((9,9), np.uint8)
 
 
-img = cv2.imread("Muestra1.png")
+img = cv2.imread("imgs/Muestra5.jpeg")
 cv2.imshow("Input Image", img)
 Gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -19,25 +44,25 @@ Gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 gausfilter = cv2.GaussianBlur(img, (3,3), 0)
 
 
-
 #Equalize Input Image
-graygaus = cv2.cvtColor(gausfilter, cv2.COLOR_BGR2GRAY)
 equalized = cv2.equalizeHist(Gray)
-
+cv2.imshow("Gray-Equalized", equalized)
 
 #Modify Contrast and Brightness
 #alpha -> Contrast [1.0 to 3.0]
 #Beta -> Brightness [0-100]
 CandB = cv2.convertScaleAbs(equalized, alpha=1.1,beta=20)
-cv2.imshow("Equalized", equalized)
+
 
 
 #Create Trackbars
-cv2.namedWindow("MorphoTrackbars")
-cv2.createTrackbar("Threshold BlockSize","MorphoTrackbars", 3, 1023, nothing)
+cv2.namedWindow("MorphoTrackbars",flags=0)
+cv2.createTrackbar("Threshold BlockSize","MorphoTrackbars", 3, 5000, nothing)
 cv2.createTrackbar("Contours min Size", "MorphoTrackbars", 1, 50, nothing)
-
-
+cv2.createTrackbar("On/Off Erode", "MorphoTrackbars", 1, 1, nothing)
+#Create Erode window ( Just for mouse event works)
+cv2.namedWindow("Erode")
+cv2.setMouseCallback("Erode", mouse_erasing)
 while(1):
 
     TEblockSize = cv2.getTrackbarPos("Threshold BlockSize","MorphoTrackbars")
@@ -58,9 +83,11 @@ while(1):
     cv2.imshow("TreshEqualized33", threshequalized)
 
     #Erode
-    erode = cv2.erode(threshequalized, kernel1, iterations=1)
-    erode = cv2.erode(erode, kernel2, iterations=1)
+    if cv2.getTrackbarPos("On/Off Erode", "MorphoTrackbars") == 1:
+        erode = cv2.erode(threshequalized, kernel1, iterations=1)
+        erode = cv2.erode(erode, kernel2, iterations=1)
     cv2.imshow("Erode", erode)
+
 
     #Dilate
     dilate = cv2.dilate(erode, kernel1, iterations=2)
